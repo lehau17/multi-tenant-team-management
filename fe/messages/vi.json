@@ -1,0 +1,34 @@
+{
+  "HomePage": {
+    "title": "Xin chào Next.js",
+    "description": "Học lập trình thật vui"
+  },
+  "Sidebar": {
+    "home": "Trang chủ",
+    "workspace": "Không gian làm việc",
+    "settings": "Cài đặt",
+    "projects": "Dự án",
+    "members": "Thành viên"
+  },
+  "Auth": {
+    "login": "Đăng nhập",
+    "email": "Email",
+    "emailPlaceholder": "Vui lòng nhập email",
+    "emailInvalid": "Email không hợp lệ",
+    "password": "Mật khẩu",
+    "passwordPlaceholder": "Nhập mật khẩu",
+    "passwordMinLength": "Mật khẩu ít nhất 6 ký tự",
+    "submitLogin": "Đăng nhập",
+    "noAccount": "Bạn chưa có tài khoản?",
+    "registerNow": "Đăng ký ngay",
+    "register": "Đăng ký",
+    "fullname": "Họ và tên",
+    "fullnamePlaceHolder": "Nhập họ và tên",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
+    "passwordMismatch": "Mật khẩu không khớp",
+    "submitRegister": "Đăng ký",
+    "haveAccount": "Đã có tài khoản?",
+    "loginNow": "Đăng nhập ngay"
+  }
+}
