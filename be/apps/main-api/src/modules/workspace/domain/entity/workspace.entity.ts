@@ -1,4 +1,5 @@
 import { AggregateRoot } from "@app/shared/core/aggregate-root.base";
+import { ERROR_CODE } from "@app/shared/error/error-code";
 import { DomainException } from "@app/shared/error/error-exception";
 import { DomainVo } from "@app/shared/value-object/domain.value-object";
 import { ID_TYPE, IdVo } from "@app/shared/value-object/id.value-object";
@@ -51,7 +52,7 @@ export class Workspace extends AggregateRoot<TWorkspaceProps> {
 
   public updateInfo(props: { name?: string; logo?: string }): void {
     if (props.name) {
-      if (props.name.length < 3) throw new DomainException("INVALID_NAME_LENGTH");
+      if (props.name.length < 3) throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "Tên workspace phải có ít nhất 3 ký tự");
       this.props.workspaceName = props.name;
     }
     if (props.logo !== undefined) {

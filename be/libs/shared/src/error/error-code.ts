@@ -6,7 +6,11 @@ export enum ERROR_CODE {
   INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
   WORKSPACENAME_ALREADY_EXIST = "WORKSPACENAME_ALREADY_EXIST",
   MEMBER_ALREADDY_INVITED = "MEMBER_ALREADDY_INVITED",
-  PROJECT_IDENTIFIER_ALREADY_EXIST = "PROJECT_IDENTIFIER_ALREADY_EXIST"
+  PROJECT_IDENTIFIER_ALREADY_EXIST = "PROJECT_IDENTIFIER_ALREADY_EXIST",
+  INVALID_PLAN_NAME = "INVALID_PLAN_NAME",
+  INVALID_PLAN_CODE = "INVALID_PLAN_CODE",
+  INVALID_PLAN_PRICE = "INVALID_PLAN_PRICE",
+  INVALID_PLAN_CONFIG = "INVALID_PLAN_CONFIG"
 }
 
 type Translation = { [key in 'vi' | 'en']: string };
@@ -39,5 +43,21 @@ export const ERROR_MESSAGE_TRANSLATIONS: Record<ERROR_CODE, Translation> = {
   [ERROR_CODE.PROJECT_IDENTIFIER_ALREADY_EXIST]: {
     vi: "Identifier project đã tồn tại trong workspace",
     en: "Project identifier already exists in workspace"
+  },
+  [ERROR_CODE.INVALID_PLAN_NAME]: {
+    vi: "Tên plan không được để trống",
+    en: "Plan name must not be empty"
+  },
+  [ERROR_CODE.INVALID_PLAN_CODE]: {
+    vi: "Code plan không được để trống",
+    en: "Plan code must not be empty"
+  },
+  [ERROR_CODE.INVALID_PLAN_PRICE]: {
+    vi: "Giá plan không được âm",
+    en: "Plan price must not be negative"
+  },
+  [ERROR_CODE.INVALID_PLAN_CONFIG]: {
+    vi: "Cấu hình plan không hợp lệ",
+    en: "Invalid plan configuration"
   }
 } as const;

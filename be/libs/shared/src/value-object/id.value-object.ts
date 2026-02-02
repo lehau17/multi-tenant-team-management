@@ -1,5 +1,6 @@
 import { validate as isValidUUID } from 'uuid';
 import { ValueObject } from '../core';
+import { ERROR_CODE } from '../error/error-code';
 import { DomainException } from '../error/error-exception';
 
 export enum ID_TYPE {
@@ -32,24 +33,24 @@ export class IdVo extends ValueObject<IIdVoProps> {
       case ID_TYPE.AUTO_INCREMENT:
         const num = Number(id);
         if (isNaN(num)) {
-          throw new DomainException("ID Auto-Increment phải là số");
+          throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "ID Auto-Increment phải là số");
         }
         if (num <= 0 || !Number.isInteger(num)) {
-           throw new DomainException("ID phải là số nguyên dương");
+           throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "ID phải là số nguyên dương");
         }
         break;
 
       case ID_TYPE.UUID:
         if (typeof id !== 'string') {
-           throw new DomainException("UUID ID phải là chuỗi ký tự");
+           throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "UUID ID phải là chuỗi ký tự");
         }
         if (!isValidUUID(id)) {
-          throw new DomainException("UUID không đúng định dạng");
+          throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "UUID không đúng định dạng");
         }
         break;
 
       default:
-        throw new DomainException("Loại ID không được hỗ trợ");
+        throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "Loại ID không được hỗ trợ");
     }
   }
 }

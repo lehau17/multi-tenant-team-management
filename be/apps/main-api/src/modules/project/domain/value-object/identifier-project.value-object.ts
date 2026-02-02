@@ -1,4 +1,5 @@
 import { ValueObject } from "@app/shared/core";
+import { ERROR_CODE } from "@app/shared/error/error-code";
 import { DomainException } from "@app/shared/error/error-exception";
 
 export interface IIdentifierProjectProps {
@@ -20,21 +21,21 @@ export class IdentifierProjectVo extends ValueObject<IIdentifierProjectProps> {
 
   static create(identifier: string): IdentifierProjectVo {
     if (!identifier || identifier.trim().length === 0) {
-      throw new DomainException("Identifier project không được để trống");
+      throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "Identifier project không được để trống");
     }
 
     const normalized = identifier.trim().toUpperCase();
 
     if (normalized.length < this.MIN_LENGTH) {
-      throw new DomainException(`Identifier phải có ít nhất ${this.MIN_LENGTH} ký tự`);
+      throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, `Identifier phải có ít nhất ${this.MIN_LENGTH} ký tự`);
     }
 
     if (normalized.length > this.MAX_LENGTH) {
-      throw new DomainException(`Identifier không được vượt quá ${this.MAX_LENGTH} ký tự`);
+      throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, `Identifier không được vượt quá ${this.MAX_LENGTH} ký tự`);
     }
 
     if (!this.IDENTIFIER_REGEX.test(normalized)) {
-      throw new DomainException("Identifier chỉ được chứa chữ cái in hoa, số, dấu gạch ngang và gạch dưới, bắt đầu bằng chữ cái");
+      throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "Identifier chỉ được chứa chữ cái in hoa, số, dấu gạch ngang và gạch dưới, bắt đầu bằng chữ cái");
     }
 
     return new IdentifierProjectVo({ value: normalized });

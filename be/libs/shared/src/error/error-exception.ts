@@ -51,7 +51,7 @@ export class UnprocessableEntityException extends BaseException { // Sửa chín
 
 
 export class DomainException extends BaseException {
-  constructor( message = "Domain Exception", errorCode: ERROR_CODE = ERROR_CODE.INVALID_DATA_REQUEST,) {
+  constructor(errorCode: ERROR_CODE, message = "Domain Exception") {
     super(HttpStatus.BAD_REQUEST, errorCode, message);
   }
 }

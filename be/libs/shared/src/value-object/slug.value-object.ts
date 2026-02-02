@@ -1,5 +1,6 @@
 import defaultSlugify from 'slugify';
 import { ValueObject } from "../core";
+import { ERROR_CODE } from "../error/error-code";
 import { DomainException } from "../error/error-exception";
 export interface ISlugProps {
   value: string;
@@ -22,8 +23,8 @@ export class SlugVo extends ValueObject<ISlugProps> {
    * @param id ID (VD: "550e8400-e29b...")
    */
   static create(name: string, id: string): SlugVo {
-    if (!name) throw new DomainException("Name để tạo slug không được rỗng");
-    if (!id) throw new DomainException("ID để tạo slug không được rỗng");
+    if (!name) throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "Name để tạo slug không được rỗng");
+    if (!id) throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "ID để tạo slug không được rỗng");
 
     // 1. Tạo slug từ tên (VD: "Hitek Software" -> "hitek-software")
     const nameSlug = defaultSlugify(name, {
@@ -45,7 +46,7 @@ export class SlugVo extends ValueObject<ISlugProps> {
    * Trường hợp load từ DB lên (Slug đã có sẵn, không cần gen lại)
    */
   static load(existingSlug: string): SlugVo {
-      if(!existingSlug) throw new DomainException("Slug rỗng");
+      if(!existingSlug) throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "Slug rỗng");
       return new SlugVo({ value: existingSlug });
   }
 }

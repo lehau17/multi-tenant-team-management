@@ -1,4 +1,5 @@
 import { ValueObject } from "@app/shared/core";
+import { ERROR_CODE } from "@app/shared/error/error-code";
 import { DomainException } from "@app/shared/error/error-exception";
 
 export interface INameProjectProps {
@@ -19,17 +20,17 @@ export class NameProjectVo extends ValueObject<INameProjectProps> {
 
   static create(name: string): NameProjectVo {
     if (!name || name.trim().length === 0) {
-      throw new DomainException("Tên project không được để trống");
+      throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "Tên project không được để trống");
     }
 
     const trimmed = name.trim();
 
     if (trimmed.length < this.MIN_LENGTH) {
-      throw new DomainException(`Tên project phải có ít nhất ${this.MIN_LENGTH} ký tự`);
+      throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, `Tên project phải có ít nhất ${this.MIN_LENGTH} ký tự`);
     }
 
     if (trimmed.length > this.MAX_LENGTH) {
-      throw new DomainException(`Tên project không được vượt quá ${this.MAX_LENGTH} ký tự`);
+      throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, `Tên project không được vượt quá ${this.MAX_LENGTH} ký tự`);
     }
 
     return new NameProjectVo({ value: trimmed });

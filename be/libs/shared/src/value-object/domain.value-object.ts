@@ -1,4 +1,5 @@
 import { ValueObject } from "../core";
+import { ERROR_CODE } from "../error/error-code";
 import { DomainException } from "../error/error-exception";
 
 export interface IDomainVoProps {
@@ -21,7 +22,7 @@ export class DomainVo extends ValueObject<IDomainVoProps> {
 
   public static create(domain: string): DomainVo {
     if (!domain) {
-      throw new DomainException("Domain không được để trống");
+      throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, "Domain không được để trống");
     }
 
     // 1. Sanitize: Cắt khoảng trắng, chuyển về chữ thường
@@ -32,7 +33,7 @@ export class DomainVo extends ValueObject<IDomainVoProps> {
 
     // 3. Validate
     if (!this.validate(cleanedDomain)) {
-      throw new DomainException(`Domain '${cleanedDomain}' không hợp lệ. (Ví dụ đúng: example.com)`);
+      throw new DomainException(ERROR_CODE.INVALID_DATA_REQUEST, `Domain '${cleanedDomain}' không hợp lệ. (Ví dụ đúng: example.com)`);
     }
 
     return new DomainVo({ value: cleanedDomain });
