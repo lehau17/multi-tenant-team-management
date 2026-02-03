@@ -29,6 +29,12 @@
       ],
       "@app/cache/*": [
         "libs/cache/src/*"
+      ],
+      "@app/message-queue": [
+        "libs/message-queue/src"
+      ],
+      "@app/message-queue/*": [
+        "libs/message-queue/src/*"
       ]
     }
   }

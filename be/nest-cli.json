@@ -43,6 +43,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/cache/tsconfig.lib.json"
       }
+    },
+    "message-queue": {
+      "type": "library",
+      "root": "libs/message-queue",
+      "entryFile": "index",
+      "sourceRoot": "libs/message-queue/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/message-queue/tsconfig.lib.json"
+      }
     }
   }
 }

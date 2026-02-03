@@ -1,4 +1,5 @@
 import { CacheModule } from '@app/cache';
+import { MessageQueueModule } from '@app/message-queue';
 import { SharedModule } from '@app/shared';
 import { AllExceptionsFilter } from '@app/shared/filters/global-exception.filter';
 import { JwtAuthGuard } from '@app/shared/guard/jwt-auth.guard';
@@ -23,6 +24,7 @@ import { WorkspaceModule } from './modules/workspace/workspace.module';
     }),
     SharedModule,
     CacheModule.forRoot(),
+    MessageQueueModule,
     JwtModule.register({
       global: true,
     }),
@@ -32,7 +34,7 @@ import { WorkspaceModule } from './modules/workspace/workspace.module';
       useFactory: async (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get<string>('DB_HOST'),
-        port: parseInt(configService.get<string>('DB_PORT'), 10), // Parse INT cho chắc
+        port: parseInt(configService.get<string>('DB_PORT'), 10),
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
