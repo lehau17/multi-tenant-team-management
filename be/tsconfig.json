@@ -35,6 +35,12 @@
       ],
       "@app/message-queue/*": [
         "libs/message-queue/src/*"
+      ],
+      "@app/outbox": [
+        "libs/outbox/src"
+      ],
+      "@app/outbox/*": [
+        "libs/outbox/src/*"
       ]
     }
   }

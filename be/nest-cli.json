@@ -52,6 +52,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/message-queue/tsconfig.lib.json"
       }
+    },
+    "outbox": {
+      "type": "library",
+      "root": "libs/outbox",
+      "entryFile": "index",
+      "sourceRoot": "libs/outbox/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/outbox/tsconfig.lib.json"
+      }
     }
   }
 }
