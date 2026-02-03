@@ -1,4 +1,5 @@
-import { CacheModule, SharedModule } from '@app/shared';
+import { CacheModule } from '@app/cache';
+import { SharedModule } from '@app/shared';
 import { AllExceptionsFilter } from '@app/shared/filters/global-exception.filter';
 import { JwtAuthGuard } from '@app/shared/guard/jwt-auth.guard';
 import { GlobalValidationPipe } from '@app/shared/pipe/global-validation.pipe';
