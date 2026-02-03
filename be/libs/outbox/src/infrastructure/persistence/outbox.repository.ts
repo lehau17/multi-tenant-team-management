@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { IOutboxPort } from '../../domain/ports/outbox.port';
-import { OutboxEntryData } from '../../domain/types/outbox-entry.types';
 import { randomUUID } from 'crypto';
+import { IOutboxRepository } from '../../domain/ports/outbox.port';
+import { OutboxEntryData } from '../../domain/types/outbox-entry.types';
 
 @Injectable()
-export class OutboxService implements IOutboxPort {
+export class OutboxRepository implements IOutboxRepository {
   constructor(private readonly dataSource: DataSource) {}
 
   async save<TPayload, T>(

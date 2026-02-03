@@ -1,2 +1,1 @@
 export const OUTBOX_CONFIG = Symbol('OUTBOX_CONFIG');
-export const OUTBOX_ENTITY_REGISTRY = Symbol('OUTBOX_ENTITY_REGISTRY');

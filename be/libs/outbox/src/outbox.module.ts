@@ -1,24 +1,25 @@
 import {
   DynamicModule,
   Module,
+  OnApplicationBootstrap,
   OnModuleDestroy,
-  OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { OUTBOX_PROCESSOR_SERVICE } from './domain/ports/outbox-processor.port';
-import { OUTBOX_SERVICE } from './domain/ports/outbox.port';
+import { OUTBOX_REPOSITORY } from './domain/ports/outbox.port';
 import {
   OutboxConfig,
   OutboxEntityRegistration,
-  OutboxStrategy,
 } from './domain/types/outbox.types';
 import { OutboxProcessorFactory } from './infrastructure/factory/outbox-processor.factory';
+import { OutboxRepository } from './infrastructure/persistence/outbox.repository';
 import { OutboxEntityRegistry } from './infrastructure/registry/outbox-entity.registry';
-import { OutboxService } from './infrastructure/services/outbox.service';
+import { DebeziumOutboxStrategy } from './infrastructure/strategies/debezium-outbox.strategy';
 import { OUTBOX_CONFIG } from './infrastructure/tokens';
 
+const OUTBOX_REGISTRATIONS = Symbol('OUTBOX_REGISTRATIONS');
+
 @Module({})
-export class OutboxModule implements OnModuleInit, OnModuleDestroy {
+export class OutboxModule implements OnApplicationBootstrap, OnModuleDestroy {
   static forRoot(): DynamicModule {
     return {
       module: OutboxModule,
@@ -29,51 +30,35 @@ export class OutboxModule implements OnModuleInit, OnModuleDestroy {
         {
           provide: OUTBOX_CONFIG,
           useFactory: (configService: ConfigService): OutboxConfig => ({
-            strategy:
-              (configService.get<string>('OUTBOX_STRATEGY') as OutboxStrategy) ||
-              OutboxStrategy.POLLING,
-            pollingIntervalMs:
-              configService.get<number>('OUTBOX_POLLING_INTERVAL_MS') || 5000,
+            debeziumServerName:
+              configService.get<string>('DEBEZIUM_SERVER_NAME') || 'dbserver1',
+            debeziumSchemaName:
+              configService.get<string>('DEBEZIUM_SCHEMA_NAME') || 'public',
             maxRetryCount:
               configService.get<number>('OUTBOX_MAX_RETRY_COUNT') || 3,
             batchSize: configService.get<number>('OUTBOX_BATCH_SIZE') || 100,
           }),
           inject: [ConfigService],
         },
-        OutboxService,
         {
-          provide: OUTBOX_SERVICE,
-          useExisting: OutboxService,
+          provide: OUTBOX_REPOSITORY,
+          useClass: OutboxRepository,
         },
+        DebeziumOutboxStrategy,
         OutboxProcessorFactory,
-        {
-          provide: OUTBOX_PROCESSOR_SERVICE,
-          useFactory: (factory: OutboxProcessorFactory) => factory.create(),
-          inject: [OutboxProcessorFactory],
-        },
       ],
-      exports: [
-        OUTBOX_SERVICE,
-        OUTBOX_PROCESSOR_SERVICE,
-        OutboxEntityRegistry,
-        OUTBOX_CONFIG,
-      ],
+      exports: [OUTBOX_REPOSITORY],
     };
   }
 
-  static forFeature(
-    registrations: OutboxEntityRegistration[],
-  ): DynamicModule {
+  static forFeature(registrations: OutboxEntityRegistration[]): DynamicModule {
     return {
       module: OutboxModule,
       providers: [
         {
-          provide: 'OUTBOX_FEATURE_REGISTRATIONS',
+          provide: OUTBOX_REGISTRATIONS, // TRIGGER Not export
           useFactory: (registry: OutboxEntityRegistry) => {
-            for (const registration of registrations) {
-              registry.register(registration);
-            }
-            return registrations;
+            registrations.forEach((reg) => registry.register(reg));
           },
           inject: [OutboxEntityRegistry],
         },
@@ -83,13 +68,11 @@ export class OutboxModule implements OnModuleInit, OnModuleDestroy {
 
   constructor(private readonly processorFactory: OutboxProcessorFactory) {}
 
-  async onModuleInit(): Promise<void> {
-    const processor = this.processorFactory.create();
-    await processor.start();
+  async onApplicationBootstrap(): Promise<void> {
+    await this.processorFactory.getStrategy().start();
   }
 
   async onModuleDestroy(): Promise<void> {
-    const processor = this.processorFactory.create();
-    await processor.stop();
+    await this.processorFactory.getStrategy().stop();
   }
 }

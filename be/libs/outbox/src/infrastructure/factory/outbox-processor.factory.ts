@@ -1,56 +1,36 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import { IOutboxProcessorPort } from '../../domain/ports/outbox-processor.port';
-import { OutboxConfig, OutboxStrategy } from '../../domain/types/outbox.types';
-import { OutboxEntityRegistry } from '../registry/outbox-entity.registry';
-import { PollingOutboxStrategy } from '../strategies/polling-outbox.strategy';
-import { CdcOutboxStrategy } from '../strategies/cdc-outbox.strategy';
-import { OUTBOX_CONFIG } from '../tokens';
 import { IMessageQueuePort, MESSAGE_QUEUE_SERVICE } from '@app/message-queue';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { IOutboxStrategyPort } from '../../domain/ports/outbox-strategy.port';
+import { OutboxConfig } from '../../domain/types/outbox.types';
+import { DebeziumOutboxStrategy } from '../strategies/debezium-outbox.strategy';
+import { OUTBOX_CONFIG } from '../tokens';
 
 @Injectable()
 export class OutboxProcessorFactory {
   private readonly logger = new Logger(OutboxProcessorFactory.name);
-  private instance: IOutboxProcessorPort | null = null;
+  private initialized = false;
 
   constructor(
-    private readonly dataSource: DataSource,
-    private readonly registry: OutboxEntityRegistry,
+    private readonly debeziumStrategy: DebeziumOutboxStrategy,
     @Inject(OUTBOX_CONFIG)
     private readonly config: OutboxConfig,
     @Inject(MESSAGE_QUEUE_SERVICE)
     private readonly messageQueue: IMessageQueuePort,
   ) {}
 
-  create(): IOutboxProcessorPort {
-    if (this.instance) {
-      return this.instance;
+  getStrategy(): IOutboxStrategyPort {
+    this.ensureInitialized();
+    return this.debeziumStrategy;
+  }
+
+  private ensureInitialized(): void {
+    if (this.initialized) {
+      return;
     }
 
-    switch (this.config.strategy) {
-      case OutboxStrategy.POLLING:
-        this.instance = new PollingOutboxStrategy(
-          this.dataSource,
-          this.registry,
-          this.config,
-          this.messageQueue,
-        );
-        break;
+    this.debeziumStrategy.initialize(this.config, this.messageQueue);
+    this.initialized = true;
 
-      case OutboxStrategy.CDC:
-        this.instance = new CdcOutboxStrategy(
-          this.dataSource,
-          this.registry,
-          this.config,
-          this.messageQueue,
-        );
-        break;
-
-      default:
-        throw new Error(`Unsupported outbox strategy: ${this.config.strategy}`);
-    }
-
-    this.logger.log(`Outbox processor strategy: ${this.config.strategy}`);
-    return this.instance;
+    this.logger.log('Debezium outbox processor initialized');
   }
 }

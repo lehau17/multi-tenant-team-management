@@ -1,8 +1,8 @@
 import { OutboxEntryData } from '../types/outbox-entry.types';
 
-export const OUTBOX_SERVICE = Symbol('OUTBOX_SERVICE');
+export const OUTBOX_REPOSITORY = Symbol('OUTBOX_REPOSITORY');
 
-export interface IOutboxPort {
+export interface IOutboxRepository {
   save<TPayload, T>(
     entry: OutboxEntryData<TPayload>,
     entityClass: new () => T,

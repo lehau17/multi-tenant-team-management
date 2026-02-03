@@ -11,6 +11,10 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
     volumes:
       - ./.docker/postgres-data:/var/lib/postgresql/data
     networks:
@@ -25,6 +29,127 @@ services:
     command: redis-server --appendonly yes
     volumes:
       - ./.docker/redis-data:/data
+    networks:
+      - sass
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.6
+    container_name: sass_redpanda
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=info
+      - --set redpanda.auto_create_topics_enabled=true
+    ports:
+      - 19092:19092
+      - 18081:18081
+      - 18082:18082
+      - 19644:9644
+    volumes:
+      - ./.docker/redpanda-data:/var/lib/redpanda/data
+    networks:
+      - sass
+
+  redpanda-console:
+    image: docker.redpanda.com/redpandadata/console:v2.8.3
+    container_name: sass_redpanda_console
+    entrypoint: /bin/sh
+    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["redpanda:9092"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://redpanda:8081/"]
+        redpanda:
+          adminApi:
+            enabled: true
+            urls: ["http://redpanda:9644/"]
+    ports:
+      - 8080:8080
+    depends_on:
+      - redpanda
+    networks:
+      - sass
+
+  debezium:
+    image: debezium/connect:2.4
+    container_name: sass_debezium
+    ports:
+      - 8083:8083
+    environment:
+      BOOTSTRAP_SERVERS: redpanda:9092
+      GROUP_ID: debezium-connect
+      CONFIG_STORAGE_TOPIC: debezium_configs
+      OFFSET_STORAGE_TOPIC: debezium_offsets
+      STATUS_STORAGE_TOPIC: debezium_statuses
+      CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      STATUS_STORAGE_REPLICATION_FACTOR: 1
+    depends_on:
+      - redpanda
+      - database
+    networks:
+      - sass
+
+  debezium-init:
+    image: curlimages/curl:8.7.1
+    container_name: sass_debezium_init
+    depends_on:
+      - debezium
+      - database
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Waiting for Debezium Connect to be ready..."
+        until curl -sf http://debezium:8083/connectors >/dev/null 2>&1; do
+          echo "Debezium not ready, retrying in 5s..."
+          sleep 5
+        done
+        echo "Debezium is ready!"
+
+        # Check if connector already exists
+        if curl -sf http://debezium:8083/connectors/outbox-connector >/dev/null 2>&1; then
+          echo "Connector 'outbox-connector' already exists, skipping..."
+        else
+          echo "Creating outbox connector..."
+          curl -X POST http://debezium:8083/connectors \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "outbox-connector",
+              "config": {
+                "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+                "database.hostname": "database",
+                "database.port": "5432",
+                "database.user": "'"$${DB_USERNAME}"'",
+                "database.password": "'"$${DB_PASSWORD}"'",
+                "database.dbname": "'"$${DB_NAME}"'",
+                "topic.prefix": "dbserver1",
+                "table.include.list": "public.*_outbox",
+                "plugin.name": "pgoutput",
+                "slot.name": "outbox_slot",
+                "publication.name": "outbox_publication"
+              }
+            }'
+          echo ""
+          echo "Connector created successfully!"
+        fi
+    environment:
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    restart: "no"
     networks:
       - sass
 
