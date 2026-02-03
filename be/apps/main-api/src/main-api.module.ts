@@ -10,6 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { IdentityModule } from './modules/identity/identity.module';
 import { ProjectModule } from './modules/project/project.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { WorkspaceModule } from './modules/workspace/workspace.module';
 
 @Global()
@@ -49,7 +50,8 @@ import { WorkspaceModule } from './modules/workspace/workspace.module';
     }),
     IdentityModule,
     WorkspaceModule,
-    ProjectModule
+    ProjectModule,
+    SubscriptionModule
   ],
   controllers: [],
   providers: [
