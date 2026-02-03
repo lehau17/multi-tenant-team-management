@@ -6,6 +6,7 @@ export * from "./guard";
 export * from "./iam";
 export * from "./infrastructure";
 export * from "./pipe";
+export * from "./utils";
 export * from "./value-object";
 export * from './shared.module';
 export * from './shared.service';
