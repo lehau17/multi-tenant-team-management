@@ -21,3 +21,4 @@ export class WorkspaceMemberOrmEntity {
   @Column({ name: 'joined_at', type: 'timestamp' })
   joinedAt: Date;
 }
+

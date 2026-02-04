@@ -47,7 +47,7 @@ export class OutboxModule implements OnApplicationBootstrap, OnModuleDestroy {
         DebeziumOutboxStrategy,
         OutboxProcessorFactory,
       ],
-      exports: [OUTBOX_REPOSITORY],
+      exports: [OUTBOX_REPOSITORY, OutboxProcessorFactory, OutboxEntityRegistry],
     };
   }
 

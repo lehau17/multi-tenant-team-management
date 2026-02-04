@@ -75,7 +75,7 @@ export class DebeziumOutboxStrategy implements IOutboxStrategyPort {
       await this.messageQueue.subscribe<DebeziumOutboxEvent>(
         debeziumTopic,
         async (envelope) => {
-          await this.handleDebeziumEvent(registration, envelope.data);
+          await this.handleDebeziumEvent(registration, envelope);
         },
       );
 
@@ -93,10 +93,9 @@ export class DebeziumOutboxStrategy implements IOutboxStrategyPort {
     registration: OutboxEntityRegistration<unknown>,
     event: DebeziumOutboxEvent,
   ): Promise<void> {
-    console.log("Check event từ DebeziumOutboxEvent", event)
     // Debezium sends events for INSERT, UPDATE, DELETE
     // We only care about INSERT (op: 'c') for outbox pattern
-    if (event.op !== 'c') {
+    if (event.op !== 'c' && event.op !=='u') {
       return;
     }
 

@@ -17,11 +17,16 @@ services:
       - "wal_level=logical"
     volumes:
       - ./.docker/postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - sass
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.0
     container_name: sass_redis
     restart: always
     ports:
@@ -56,32 +61,38 @@ services:
       - 19644:9644
     volumes:
       - ./.docker/redpanda-data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -E 'Healthy|OK'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - sass
 
-  redpanda-console:
-    image: docker.redpanda.com/redpandadata/console:v2.8.3
-    container_name: sass_redpanda_console
-    entrypoint: /bin/sh
-    command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
-    environment:
-      CONFIG_FILEPATH: /tmp/config.yml
-      CONSOLE_CONFIG_FILE: |
-        kafka:
-          brokers: ["redpanda:9092"]
-          schemaRegistry:
-            enabled: true
-            urls: ["http://redpanda:8081/"]
-        redpanda:
-          adminApi:
-            enabled: true
-            urls: ["http://redpanda:9644/"]
-    ports:
-      - 8080:8080
-    depends_on:
-      - redpanda
-    networks:
-      - sass
+  # redpanda-console:
+  #   image: docker.redpanda.com/redpandadata/console:v2.8.3
+  #   container_name: sass_redpanda_console
+  #   entrypoint: /bin/sh
+  #   command: -c 'echo "$$CONSOLE_CONFIG_FILE" > /tmp/config.yml; /app/console'
+  #   environment:
+  #     CONFIG_FILEPATH: /tmp/config.yml
+  #     CONSOLE_CONFIG_FILE: |
+  #       kafka:
+  #         brokers: ["redpanda:9092"]
+  #         schemaRegistry:
+  #           enabled: true
+  #           urls: ["http://redpanda:8081/"]
+  #       redpanda:
+  #         adminApi:
+  #           enabled: true
+  #           urls: ["http://redpanda:9644/"]
+  #   ports:
+  #     - 8888:8080 # Đổi sang 8888 để tránh trùng port backend
+  #   depends_on:
+  #     redpanda:
+  #       condition: service_healthy
+  #   networks:
+  #     - sass
 
   debezium:
     image: debezium/connect:2.4
@@ -97,9 +108,15 @@ services:
       CONFIG_STORAGE_REPLICATION_FACTOR: 1
       OFFSET_STORAGE_REPLICATION_FACTOR: 1
       STATUS_STORAGE_REPLICATION_FACTOR: 1
+      # Tối ưu cho môi trường Dev: tạo topic nhanh
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
     depends_on:
-      - redpanda
-      - database
+      redpanda:
+        condition: service_healthy
+      database:
+        condition: service_healthy
     networks:
       - sass
 
@@ -108,7 +125,6 @@ services:
     container_name: sass_debezium_init
     depends_on:
       - debezium
-      - database
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
@@ -119,7 +135,6 @@ services:
         done
         echo "Debezium is ready!"
 
-        # Check if connector already exists
         if curl -sf http://debezium:8083/connectors/outbox-connector >/dev/null 2>&1; then
           echo "Connector 'outbox-connector' already exists, skipping..."
         else
@@ -139,7 +154,11 @@ services:
                 "table.include.list": "public.*_outbox",
                 "plugin.name": "pgoutput",
                 "slot.name": "outbox_slot",
-                "publication.name": "outbox_publication"
+                "publication.name": "outbox_publication",
+                "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+                "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+                "key.converter.schemas.enable": "false",
+                "value.converter.schemas.enable": "false"
               }
             }'
           echo ""
