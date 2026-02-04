@@ -13,6 +13,12 @@ export class PlanRepository implements IPlanRepository {
     private readonly planRepo: Repository<PlanOrmEntity>,
   ) {}
 
+  async findById(id: string): Promise<Plan | null> {
+    const data = await this.planRepo.findOne({ where: { id } });
+    if (!data) return null;
+    return PlanInfraMapper.toDomain(data);
+  }
+
   async findAll(): Promise<Plan[]> {
     const data = await this.planRepo.find({
       where: { isActive: true },

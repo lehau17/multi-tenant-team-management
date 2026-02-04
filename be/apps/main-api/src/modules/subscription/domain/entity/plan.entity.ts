@@ -65,6 +65,21 @@ export class Plan extends DddAggregateRoot<TPlanProps> {
     this.props.isActive = true;
   }
 
+  updateInfo(props: { name?: string; description?: string; price?: number; currency?: string }): void {
+    if (props.name !== undefined) {
+      this.props.name = PlanNameVo.create(props.name);
+    }
+    if (props.description !== undefined) {
+      this.props.description = props.description || null;
+    }
+    if (props.price !== undefined || props.currency !== undefined) {
+      this.props.price = PlanPriceVo.create(
+        props.price ?? this.price,
+        props.currency ?? this.currency,
+      );
+    }
+  }
+
   updateConfig(config: TPlanConfig): void {
     const configVo = PlanConfigVo.create(config);
     this.props.config = configVo;

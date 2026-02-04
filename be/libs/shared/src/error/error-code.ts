@@ -10,7 +10,9 @@ export enum ERROR_CODE {
   INVALID_PLAN_NAME = "INVALID_PLAN_NAME",
   INVALID_PLAN_CODE = "INVALID_PLAN_CODE",
   INVALID_PLAN_PRICE = "INVALID_PLAN_PRICE",
-  INVALID_PLAN_CONFIG = "INVALID_PLAN_CONFIG"
+  INVALID_PLAN_CONFIG = "INVALID_PLAN_CONFIG",
+  PLAN_NOT_FOUND = "PLAN_NOT_FOUND",
+  PLAN_CODE_ALREADY_EXIST = "PLAN_CODE_ALREADY_EXIST"
 }
 
 type Translation = { [key in 'vi' | 'en']: string };
@@ -59,5 +61,13 @@ export const ERROR_MESSAGE_TRANSLATIONS: Record<ERROR_CODE, Translation> = {
   [ERROR_CODE.INVALID_PLAN_CONFIG]: {
     vi: "Cấu hình plan không hợp lệ",
     en: "Invalid plan configuration"
+  },
+  [ERROR_CODE.PLAN_NOT_FOUND]: {
+    vi: "Plan không tồn tại",
+    en: "Plan not found"
+  },
+  [ERROR_CODE.PLAN_CODE_ALREADY_EXIST]: {
+    vi: "Code plan đã tồn tại",
+    en: "Plan code already exists"
   }
 } as const;
