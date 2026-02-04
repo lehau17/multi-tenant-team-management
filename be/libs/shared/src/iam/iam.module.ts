@@ -1,10 +1,11 @@
 // src/shared/modules/iam/iam.module.ts
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/iam.strategy';
 
+@Global() // 👈 Thêm Global decorator
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -12,11 +13,11 @@ import { JwtStrategy } from './strategies/iam.strategy';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: () => ({
-        global:true
+        global: true,
       }),
     }),
   ],
-  providers: [JwtStrategy], // Strategy nằm ở đây
-  exports: [PassportModule, JwtModule], // Export ra để các module khác dùng Guard
+  providers: [JwtStrategy],
+  exports: [PassportModule, JwtModule, JwtStrategy],
 })
 export class IamModule {}
