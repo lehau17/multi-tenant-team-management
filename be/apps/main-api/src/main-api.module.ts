@@ -1,15 +1,17 @@
-import { CacheModule } from '@app/cache';
 import { MessageQueueModule } from '@app/message-queue';
-import { SharedModule } from '@app/shared';
+import { OutboxModule } from '@app/outbox';
+import { IamModule, SharedModule } from '@app/shared';
 import { AllExceptionsFilter } from '@app/shared/filters/global-exception.filter';
 import { JwtAuthGuard } from '@app/shared/guard/jwt-auth.guard';
 import { GlobalValidationPipe } from '@app/shared/pipe/global-validation.pipe';
-import { Global, Module } from '@nestjs/common';
+import { Global, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { addTransactionalDataSource } from 'typeorm-transactional';
 import { IdentityModule } from './modules/identity/identity.module';
 import { ProjectModule } from './modules/project/project.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
@@ -23,8 +25,10 @@ import { WorkspaceModule } from './modules/workspace/workspace.module';
       envFilePath: '.env',
     }),
     SharedModule,
-    CacheModule.forRoot(),
+    IamModule,
+    // CacheModule.forRoot(),
     MessageQueueModule,
+    OutboxModule.forRoot(),
     JwtModule.register({
       global: true,
     }),
@@ -49,12 +53,14 @@ import { WorkspaceModule } from './modules/workspace/workspace.module';
         },
         synchronize: configService.get<string>('NODE_ENV') !== 'production',
         logging: configService.get<string>('NODE_ENV') !== 'production',
+        retryAttempts: 100,
+        retryDelay: 3000,
       }),
     }),
     IdentityModule,
     WorkspaceModule,
     ProjectModule,
-    SubscriptionModule
+    SubscriptionModule,
   ],
   controllers: [],
   providers: [
@@ -69,7 +75,13 @@ import { WorkspaceModule } from './modules/workspace/workspace.module';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
-    }
+    },
   ],
 })
-export class MainApiModule { }
+export class MainApiModule implements OnModuleInit {
+  constructor(private readonly dataSource: DataSource) {}
+
+  onModuleInit() {
+    addTransactionalDataSource(this.dataSource);
+  }
+}
