@@ -1,8 +1,7 @@
-export interface OutboxConfig {
-  debeziumServerName: string;
-  debeziumSchemaName: string;
+export interface DebeziumConfig {
+  serverName: string;
+  schemaName: string;
   maxRetryCount: number;
-  batchSize: number;
 }
 
 export interface OutboxEntityRegistration<T = unknown> {

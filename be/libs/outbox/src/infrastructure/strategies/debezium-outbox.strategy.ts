@@ -1,12 +1,13 @@
-import { IMessageQueuePort } from '@app/message-queue';
-import { Injectable, Logger } from '@nestjs/common';
+import { IMessageQueuePort, MESSAGE_QUEUE_SERVICE } from '@app/message-queue';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import { BaseOutboxEntity } from '../../domain/entity/base-outbox.entity';
 import { IOutboxStrategyPort } from '../../domain/ports/outbox-strategy.port';
 import { OutboxMessage } from '../../domain/types/outbox-entry.types';
 import {
+  DebeziumConfig,
   DebeziumOutboxEvent,
-  OutboxConfig,
   OutboxEntityRegistration,
 } from '../../domain/types/outbox.types';
 import { OutboxEntityRegistry } from '../registry/outbox-entity.registry';
@@ -14,18 +15,21 @@ import { OutboxEntityRegistry } from '../registry/outbox-entity.registry';
 @Injectable()
 export class DebeziumOutboxStrategy implements IOutboxStrategyPort {
   private readonly logger = new Logger(DebeziumOutboxStrategy.name);
+  private readonly config: DebeziumConfig;
   private isRunning = false;
-  private config: OutboxConfig | null = null;
-  private messageQueue: IMessageQueuePort | null = null;
 
   constructor(
     private readonly dataSource: DataSource,
     private readonly registry: OutboxEntityRegistry,
-  ) {}
-
-  initialize(config: OutboxConfig, messageQueue: IMessageQueuePort): void {
-    this.config = config;
-    this.messageQueue = messageQueue;
+    @Inject(MESSAGE_QUEUE_SERVICE)
+    private readonly messageQueue: IMessageQueuePort,
+    configService: ConfigService,
+  ) {
+    this.config = {
+      serverName: configService.get<string>('DEBEZIUM_SERVER_NAME') || 'dbserver1',
+      schemaName: configService.get<string>('DEBEZIUM_SCHEMA_NAME') || 'public',
+      maxRetryCount: configService.get<number>('OUTBOX_MAX_RETRY_COUNT') || 3,
+    };
   }
 
   register<T>(registration: OutboxEntityRegistration<T>): void {
@@ -86,7 +90,7 @@ export class DebeziumOutboxStrategy implements IOutboxStrategyPort {
   private getDebeziumTopic(registration: OutboxEntityRegistration): string {
     // Debezium topic format: {serverName}.{schemaName}.{tableName}
     // Example: dbserver1.public.user_outbox
-    return `${this.config.debeziumServerName}.${this.config.debeziumSchemaName}.${registration.tableName}`;
+    return `${this.config.serverName}.${this.config.schemaName}.${registration.tableName}`;
   }
 
   private async handleDebeziumEvent(
