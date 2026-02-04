@@ -1,6 +1,7 @@
 export * from "./core";
 export * from "./decorator";
 export * from "./error";
+export * from "./events";
 export * from "./filters";
 export * from "./guard";
 export * from "./iam";
