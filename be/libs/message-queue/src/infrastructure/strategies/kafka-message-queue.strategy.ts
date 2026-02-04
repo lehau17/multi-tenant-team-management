@@ -57,6 +57,7 @@ constructor(
       if (!instance) continue;
 
       const prototype = Object.getPrototypeOf(instance);
+      console.log("Check prototype", prototype)
       this.metadataScanner.scanFromPrototype(instance, prototype, (methodName) => {
         const topic = this.reflector.get(EVENT_LISTENER_METADATA, instance[methodName]);
 
