@@ -8,34 +8,34 @@ import { MyWorkspaceQuery } from "../../application/query/my-workspace.query";
 import { CreateWorkspaceDto } from "../dto/create-workspace.dto";
 
 @Controller("/v1/workspace")
-export class WorkspaceController{
+export class WorkspaceController {
   constructor(
     private readonly queryBus: QueryBus,
-    private readonly commandBus : CommandBus
+    private readonly commandBus: CommandBus
   ) { }
 
   @Get("/me")
-  async getMyWorkspace(@CurrentUser("user_id") userId :string) {
+  async getMyWorkspace(@CurrentUser("user_id") userId: string) {
     const query = new MyWorkspaceQuery({
-      userId : userId
+      userId: userId
     })
     const result = await this.queryBus.execute<MyWorkspaceQuery>(query)
     return PaginationResponse.fromPagination(result)
   }
 
-    @Post()
-  async createWorkspace(@Body() {name, logo} :CreateWorkspaceDto, @CurrentUser("user_id") userId :string) {
-      const query = new CreateWorkspaceCommand(
-        userId,
-        name,
-        logo
+  @Post()
+  async createWorkspace(@Body() { name, logo }: CreateWorkspaceDto, @CurrentUser("user_id") userId: string) {
+    const query = new CreateWorkspaceCommand(
+      userId,
+      name,
+      logo
     )
     const id = await this.commandBus.execute<CreateWorkspaceCommand>(query)
-    return BaseResponse.created({id})
-    }
+    return BaseResponse.created({ id })
+  }
 
 
-     @Post(':id/members/:memberId')
+  @Post(':id/members/:memberId')
   async addMember(
     @Param('id', ParseUUIDPipe) workspaceId: string,
     @Param('memberId', ParseUUIDPipe) toUserId: string,
