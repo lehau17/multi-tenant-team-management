@@ -4,14 +4,14 @@ import { LoginUserHandler } from './application/command/login.handler';
 import { RegisterHandler } from './application/command/register.handler';
 import { IdentityDatabaseModule } from './infrastructure/database.module';
 import { AuthController } from './interface/http/auth.controller';
+import { AuthGrpcController } from './interface/grpc/auth.grpc-controller';
+
 @Module({
   imports: [IdentityDatabaseModule, CqrsModule],
-  controllers: [AuthController],
+  controllers: [AuthController, AuthGrpcController],
   providers: [
-
     RegisterHandler,
-    LoginUserHandler
-  ]
-}
-)
-export class IdentityModule{ }
+    LoginUserHandler,
+  ],
+})
+export class IdentityModule {}
