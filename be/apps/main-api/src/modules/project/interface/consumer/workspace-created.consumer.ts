@@ -1,3 +1,4 @@
+import { MessageEnvelope } from '@app/message-queue';
 import { OutboxMessage } from '@app/outbox';
 import { OnEventConsumer, WorkspaceCreatedPayload } from '@app/shared';
 import { Controller, Logger } from '@nestjs/common';
@@ -12,24 +13,16 @@ export class WorkspaceCreatedConsumer {
 
   @OnEventConsumer('workspace.created')
   async handleEvent(
-    msg: OutboxMessage<WorkspaceCreatedPayload>,
+    msg: MessageEnvelope<OutboxMessage<WorkspaceCreatedPayload>>,
     ack: () => Promise<void>,
   ): Promise<void> {
-    this.logger.log(`Received workspace.created event for workspace: ${msg.payload.id}`);
+    this.logger.log(`Received workspace.created event for workspace: ${msg.data.payload.id}`);
 
-    try {
       await this.commandBus.execute(
-        new CreateDefaultPrioritySchemesCommand(msg.payload.id),
+        new CreateDefaultPrioritySchemesCommand(msg.data.payload.id),
       );
 
-      this.logger.log(`Successfully created default priority schemes for workspace: ${msg.payload.id}`);
+      this.logger.log(`Successfully created default priority schemes for workspace: ${msg.data.payload.id}`);
       await ack();
-    } catch (error) {
-      this.logger.error(
-        `Failed to create default priority schemes for workspace: ${msg.payload.id}`,
-        error instanceof Error ? error.stack : error,
-      );
-      throw error;
-    }
   }
 }

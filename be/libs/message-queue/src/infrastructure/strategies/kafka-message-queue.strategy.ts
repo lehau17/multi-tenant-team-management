@@ -1,18 +1,16 @@
+import { MessageEnvelope } from '@app/message-queue/domain/types/message-queue.types';
 import { EVENT_LISTENER_METADATA } from '@app/shared/decorator/event-listener.decorator';
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core'; // 👈 1. Import bộ công cụ quét
+import { MessageHandler } from '@nestjs/microservices';
 import { Consumer, Kafka, Producer } from 'kafkajs';
 import { IMessageQueuePort } from '../../domain/ports/message-queue.port';
-import {
-  MessageEnvelope,
-  MessageHandler
-} from '../../domain/types/message-queue.types';
-// Giả định bạn đã định nghĩa constant này ở file decorator
+
 
 @Injectable()
 export class KafkaMessageQueueStrategy
-  implements IMessageQueuePort, OnModuleInit, OnModuleDestroy { // 👈 2. Implement lifecycle hooks
+  implements IMessageQueuePort, OnModuleInit, OnModuleDestroy { //
 
   private readonly logger = new Logger(KafkaMessageQueueStrategy.name);
   private readonly handlers = new Map<string, MessageHandler[]>();
@@ -50,28 +48,21 @@ constructor(
   }
 
   private async registerListeners() {
-    const controllers = this.discoveryService.getControllers();
-
-    for (const wrapper of controllers) {
-      const { instance } = wrapper;
-      if (!instance) continue;
-
-      const prototype = Object.getPrototypeOf(instance);
-      console.log("Check prototype", prototype)
-      this.metadataScanner.scanFromPrototype(instance, prototype, (methodName) => {
-        const topic = this.reflector.get(EVENT_LISTENER_METADATA, instance[methodName]);
-
+    const controllers = this.discoveryService.getControllers()
+    controllers.forEach((controller) => {
+      const { instance } = controller
+      if (!instance) return
+      const prototype = Object.getPrototypeOf(instance)
+      this.metadataScanner.getAllMethodNames(prototype).forEach((methodName) => {
+        const topic = this.reflector.get<string>(EVENT_LISTENER_METADATA, instance[methodName])
         if (topic) {
-          this.logger.log(`Auto-binding: Topic "${topic}" -> ${instance.constructor.name}.${methodName}`);
-
-          const handlerWrapper: MessageHandler = async (envelope, ack) => {
-            await instance[methodName].call(instance, envelope, ack);
-          };
-
-          this.subscribe(topic, handlerWrapper);
+          const handler: MessageHandler = async (data, ack) => {
+            await instance[methodName].call(instance, data, ack)
+          }
+          this.subscribe(topic, handler)
         }
-      });
-    }
+      })
+    })
   }
 
 async connect(): Promise<void> {
@@ -148,6 +139,7 @@ async connect(): Promise<void> {
                 partition,
                 offset: (Number(message.offset) + 1).toString(),
               }]);
+              this.logger.log("Committed Consumer")
             };
 
             await Promise.all(
@@ -169,8 +161,6 @@ async connect(): Promise<void> {
 
   async unsubscribe(topic: string): Promise<void> {
     this.handlers.delete(topic);
-    // Lưu ý: KafkaJS không hỗ trợ unsubscribe 1 topic cụ thể khi đang run
-    // nên ta chỉ xóa khỏi Map handlers để nó ngừng xử lý logic thôi.
     this.logger.log(`Unsubscribed from topic "${topic}"`);
   }
 }
