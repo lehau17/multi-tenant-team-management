@@ -1,4 +1,5 @@
 import { BaseResponse, PaginationResponse } from "@app/shared/core/base-response.base";
+import { CurrentUser } from "@app/shared/decorator/current-user.decorator";
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { CreateProjectCommand } from "../../application/command/create-project/create-project.command";
@@ -29,8 +30,11 @@ export class ProjectController {
   }
 
   @Post()
-  async createProject(@Body() { workspaceId, name, identifier }: CreateProjectDto) {
-    const command = new CreateProjectCommand(workspaceId, name, identifier);
+  async createProject(
+    @Body() { workspaceId, name, identifier }: CreateProjectDto,
+    @CurrentUser("user_id") userId: string,
+  ) {
+    const command = new CreateProjectCommand(workspaceId, name, identifier, userId);
     const id = await this.commandBus.execute<CreateProjectCommand>(command);
     return BaseResponse.created({ id });
   }

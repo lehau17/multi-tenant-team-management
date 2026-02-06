@@ -7,12 +7,14 @@ export type TProjectProps = {
   workspaceId: IdVo
   name: NameProjectVo
   identifier: IdentifierProjectVo
+  createdBy: IdVo
 }
 
 export type TCreateProject = {
   workspaceId: string
   name: string
   identifier: string
+  createdBy: string
 }
 
 export class GetProjectsByWorkspace extends PaginationQuery {

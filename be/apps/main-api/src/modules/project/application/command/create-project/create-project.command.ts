@@ -5,5 +5,6 @@ export class CreateProjectCommand implements ICommand {
     public readonly workspaceId: string,
     public readonly name: string,
     public readonly identifier: string,
+    public readonly createdBy: string,
   ) {}
 }

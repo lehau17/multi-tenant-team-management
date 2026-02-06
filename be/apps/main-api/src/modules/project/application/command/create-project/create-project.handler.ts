@@ -33,6 +33,7 @@ export class CreateProjectCommandHandler implements ICommandHandler<CreateProjec
       workspaceId: command.workspaceId,
       name: command.name,
       identifier: command.identifier,
+      createdBy: command.createdBy,
     });
 
     await this.projectRepository.createProject(project);
