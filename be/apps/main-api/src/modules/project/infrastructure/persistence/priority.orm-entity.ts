@@ -1,6 +1,7 @@
 import { TypeOrmBaseEntity } from '@app/shared';
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { PrioritySchemeOrmEntity } from './priority-scheme.orm-entity';
+import { TaskOrmEntity } from './task.orm-entity';
 
 @Entity('priorities')
 export class PriorityOrmEntity extends TypeOrmBaseEntity {
@@ -25,4 +26,8 @@ export class PriorityOrmEntity extends TypeOrmBaseEntity {
   })
   @JoinColumn({ name: 'scheme_id' })
   scheme: PrioritySchemeOrmEntity;
+
+
+  @OneToMany(() => TaskOrmEntity, (task) => task.priority)
+  tasks: TaskOrmEntity[]
 }

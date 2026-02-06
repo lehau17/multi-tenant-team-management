@@ -1,5 +1,6 @@
 import { TypeOrmBaseEntity } from '@app/shared';
-import { Column, Entity, Index } from 'typeorm';
+import { Column, Entity, Index, OneToMany } from 'typeorm';
+import { StageProjectOrmEntity } from './stage-project.orm-entity';
 
 @Entity('projects')
 export class ProjectOrmEntity extends TypeOrmBaseEntity {
@@ -14,4 +15,7 @@ export class ProjectOrmEntity extends TypeOrmBaseEntity {
   @Index()
   @Column({ name: 'workspace_id', type: 'uuid' })
   workspaceId: string;
+
+  @OneToMany(() => StageProjectOrmEntity, (stageProject) => stageProject.project)
+  stageProjects: StageProjectOrmEntity[]
 }
