@@ -22,5 +22,6 @@ export interface MessageEnvelope<T = unknown> {
 }
 
 export type MessageHandler<T = unknown> = (
-  message: MessageEnvelope<T>,
+  message: T,
+  ack: () => Promise<void>
 ) => Promise<void>;

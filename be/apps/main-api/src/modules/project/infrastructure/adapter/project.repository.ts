@@ -21,6 +21,7 @@ export class ProjectRepository implements IProjectRepository {
       name: project.name,
       identifier: project.identifier,
       workspaceId: project.workspaceId,
+      createdBy: project.createdBy,
     });
 
     await this.projectRepository.save(ormEntity);

@@ -8,6 +8,7 @@ export class ProjectMapper {
         name: data.name,
         identifier: data.identifier,
         workspaceId: data.workspaceId,
+        createdBy: data.createdBy,
       },
       data.id,
     );

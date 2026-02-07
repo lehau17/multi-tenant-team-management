@@ -12,7 +12,15 @@ export enum ERROR_CODE {
   INVALID_PLAN_PRICE = "INVALID_PLAN_PRICE",
   INVALID_PLAN_CONFIG = "INVALID_PLAN_CONFIG",
   PLAN_NOT_FOUND = "PLAN_NOT_FOUND",
-  PLAN_CODE_ALREADY_EXIST = "PLAN_CODE_ALREADY_EXIST"
+  PLAN_CODE_ALREADY_EXIST = "PLAN_CODE_ALREADY_EXIST",
+
+  // Notification Domain
+  INVALID_TEMPLATE_CODE = "INVALID_TEMPLATE_CODE",
+  INVALID_TEMPLATE_CONTENT = "INVALID_TEMPLATE_CONTENT",
+  INVALID_LANGUAGE_CODE = "INVALID_LANGUAGE_CODE",
+  TEMPLATE_TRANSLATION_EXISTS = "TEMPLATE_TRANSLATION_EXISTS",
+  TEMPLATE_TRANSLATION_NOT_FOUND = "TEMPLATE_TRANSLATION_NOT_FOUND",
+  EMAIL_TEMPLATE_REQUIRES_SUBJECT = "EMAIL_TEMPLATE_REQUIRES_SUBJECT",
 }
 
 type Translation = { [key in 'vi' | 'en']: string };
@@ -69,5 +77,31 @@ export const ERROR_MESSAGE_TRANSLATIONS: Record<ERROR_CODE, Translation> = {
   [ERROR_CODE.PLAN_CODE_ALREADY_EXIST]: {
     vi: "Code plan đã tồn tại",
     en: "Plan code already exists"
-  }
+  },
+
+  // Notification Domain
+  [ERROR_CODE.INVALID_TEMPLATE_CODE]: {
+    vi: "Mã template không hợp lệ",
+    en: "Invalid template code"
+  },
+  [ERROR_CODE.INVALID_TEMPLATE_CONTENT]: {
+    vi: "Nội dung template không hợp lệ",
+    en: "Invalid template content"
+  },
+  [ERROR_CODE.INVALID_LANGUAGE_CODE]: {
+    vi: "Mã ngôn ngữ không hợp lệ",
+    en: "Invalid language code"
+  },
+  [ERROR_CODE.TEMPLATE_TRANSLATION_EXISTS]: {
+    vi: "Bản dịch cho ngôn ngữ này đã tồn tại",
+    en: "Translation for this language already exists"
+  },
+  [ERROR_CODE.TEMPLATE_TRANSLATION_NOT_FOUND]: {
+    vi: "Không tìm thấy bản dịch cho ngôn ngữ này",
+    en: "Translation for this language not found"
+  },
+  [ERROR_CODE.EMAIL_TEMPLATE_REQUIRES_SUBJECT]: {
+    vi: "Template email phải có tiêu đề",
+    en: "Email template must have a subject"
+  },
 } as const;

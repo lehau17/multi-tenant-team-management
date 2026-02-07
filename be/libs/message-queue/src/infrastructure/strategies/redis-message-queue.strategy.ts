@@ -1,41 +1,96 @@
-import { Logger } from '@nestjs/common';
+import { EVENT_LISTENER_METADATA } from '@app/shared/decorator/event-listener.decorator';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import Redis, { RedisOptions } from 'ioredis';
 import { IMessageQueuePort } from '../../domain/ports/message-queue.port';
 import {
   MessageEnvelope,
-  MessageHandler,
-  RedisConfig,
+  MessageHandler
 } from '../../domain/types/message-queue.types';
 
-export class RedisMessageQueueStrategy implements IMessageQueuePort {
+@Injectable()
+export class RedisMessageQueueStrategy
+  implements IMessageQueuePort, OnModuleInit, OnModuleDestroy {
+
   private readonly logger = new Logger(RedisMessageQueueStrategy.name);
   private readonly handlers = new Map<string, MessageHandler[]>();
   private pubClient: Redis;
   private subClient: Redis;
 
-  constructor(private readonly config: RedisConfig) {}
+  private readonly redisUrl: string;
+  private readonly redisPassword?: string;
+
+constructor(
+    private readonly configService: ConfigService,
+    private readonly discoveryService: DiscoveryService,
+    private readonly metadataScanner: MetadataScanner,
+    private readonly reflector: Reflector,
+  ) {
+    this.redisUrl = this.configService.get<string>('REDIS_URL') || 'localhost';
+    this.redisPassword = this.configService.get<string>('REDIS_PASSWORD');
+  }
+
+  async onModuleInit() {
+    await this.connect();
+    await this.registerListeners();
+  }
+
+  async onModuleDestroy() {
+    await this.disconnect();
+  }
+
+  private async registerListeners() {
+    const controllers = this.discoveryService.getControllers();
+
+    for (const wrapper of controllers) {
+      const { instance } = wrapper;
+      if (!instance) continue;
+
+      const prototype = Object.getPrototypeOf(instance);
+      this.metadataScanner.scanFromPrototype(instance, prototype, (methodName) => {
+        const topic = this.reflector.get(EVENT_LISTENER_METADATA, instance[methodName]);
+
+        if (topic) {
+          this.logger.log(`🔗 Auto-binding Redis: Topic "${topic}" -> ${instance.constructor.name}.${methodName}`);
+
+          const handlerWrapper: MessageHandler = async (envelope, ack) => {
+            await instance[methodName].call(instance, envelope, ack);
+          };
+
+          this.subscribe(topic, handlerWrapper);
+        }
+      });
+    }
+  }
 
   async connect(): Promise<void> {
     this.logger.log('Connecting Redis Pub/Sub...');
 
-    const options : RedisOptions = {
-      host: this.config.url,
-      password: this.config.password,
+    const options: RedisOptions = {
+      host: this.redisUrl,
+      password: this.redisPassword,
       lazyConnect: true,
       reconnectOnError: () => true,
-      retryStrategy: (times) => { },
+      retryStrategy: (times) => Math.min(times * 50, 2000),
     };
 
     this.pubClient = new Redis(options);
     this.subClient = new Redis(options);
 
+    // 👇 XỬ LÝ NHẬN TIN NHẮN
     this.subClient.on('message', async (channel: string, message: string) => {
       const topicHandlers = this.handlers.get(channel);
       if (!topicHandlers?.length) return;
 
       try {
         const envelope: MessageEnvelope = JSON.parse(message);
-        await Promise.all(topicHandlers.map((handler) => handler(envelope)));
+
+        const noOpAck = async () => { /* Redis doesn't support ack */ };
+
+        await Promise.all(
+          topicHandlers.map((handler) => handler(envelope, noOpAck))
+        );
       } catch (error) {
         this.logger.error(
           `Error processing message on topic "${channel}"`,
@@ -64,7 +119,6 @@ export class RedisMessageQueueStrategy implements IMessageQueuePort {
       data,
       timestamp: Date.now(),
     };
-
     await this.pubClient.publish(topic, JSON.stringify(envelope));
   }
 
@@ -77,9 +131,9 @@ export class RedisMessageQueueStrategy implements IMessageQueuePort {
       existing.push(handler as MessageHandler);
     } else {
       this.handlers.set(topic, [handler as MessageHandler]);
+      // Chỉ subscribe Redis channel 1 lần
       await this.subClient.subscribe(topic);
     }
-
     this.logger.log(`Subscribed to topic "${topic}"`);
   }
 

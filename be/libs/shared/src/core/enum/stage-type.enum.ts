@@ -1,0 +1,7 @@
+export enum StageType {
+    BACKLOG = 'BACKLOG',
+    UNSTARTED = 'UNSTARTED',
+    STARTED = 'STARTED',
+    COMPLETED = 'COMPLETED',
+    CANCELED = 'CANCELED'
+}

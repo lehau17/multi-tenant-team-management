@@ -23,17 +23,23 @@ export class Project extends AggregateRoot<TProjectProps> {
     return this.props.workspaceId.value as string;
   }
 
+  get createdBy(): string {
+    return this.props.createdBy.value as string;
+  }
+
   static create(payload: TCreateProject, id?: string): Project {
     const projectId = id || new V7Generator().generate().toString();
 
     const workspaceIdVo = IdVo.create(payload.workspaceId, ID_TYPE.UUID);
     const nameVo = NameProjectVo.create(payload.name);
     const identifierVo = IdentifierProjectVo.create(payload.identifier);
+    const createdByVo = IdVo.create(payload.createdBy, ID_TYPE.UUID);
 
     return new Project(projectId, {
       workspaceId: workspaceIdVo,
       name: nameVo,
       identifier: identifierVo,
+      createdBy: createdByVo,
     });
   }
 
