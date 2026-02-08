@@ -11,6 +11,7 @@
     "members": "Thành viên"
   },
   "Auth": {
+    "selectWorkspace": "Chọn không gian làm việc",
     "login": "Đăng nhập",
     "email": "Email",
     "emailPlaceholder": "Vui lòng nhập email",

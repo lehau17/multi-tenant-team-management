@@ -11,6 +11,7 @@
     "members": "Members"
   },
   "Auth": {
+    "selectWorkspace": "Select Workspace",
     "login": "Login",
     "email": "Email",
     "emailPlaceholder": "Enter your email",
