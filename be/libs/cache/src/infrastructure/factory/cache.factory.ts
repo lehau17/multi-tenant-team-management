@@ -10,7 +10,7 @@ import { RedisCacheStrategy } from '../strategies/redis-cache.strategy';
 export class CacheFactory {
   private redisClient: Redis | null = null;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) { }
 
   create(options: CacheModuleOptions): ICachePort {
     switch (options.strategy) {

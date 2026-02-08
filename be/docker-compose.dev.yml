@@ -69,6 +69,22 @@ services:
     networks:
       - sass
 
+  
+  object-storage:
+    image: minio/minio
+    container_name: sass_object_storage
+    restart: always
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    volumes:
+      - ./.docker/minio-data:/data
+    networks:
+      - sass
   # redpanda-console:
   #   image: docker.redpanda.com/redpandadata/console:v2.8.3
   #   container_name: sass_redpanda_console

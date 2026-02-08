@@ -41,6 +41,12 @@
       ],
       "@app/outbox/*": [
         "libs/outbox/src/*"
+      ],
+      "@app/object-storage": [
+        "libs/object-storage/src"
+      ],
+      "@app/object-storage/*": [
+        "libs/object-storage/src/*"
       ]
     }
   }

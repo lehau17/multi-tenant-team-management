@@ -26,6 +26,7 @@
     "test:e2e:bg-worker": "jest --config ./apps/bg-worker/test/jest-e2e.json"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.985.0",
     "@grpc/grpc-js": "^1.14.3",
     "@grpc/proto-loader": "^0.8.0",
     "@nestjs/common": "^10.0.0",
@@ -62,6 +63,7 @@
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.2",
+    "@types/multer": "^2.0.0",
     "@types/node": "^20.3.1",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.0",
@@ -103,7 +105,8 @@
     "moduleNameMapper": {
       "^@app/shared(|/.*)$": "<rootDir>/libs/shared/src/$1",
       "^@app/cache(|/.*)$": "<rootDir>/libs/cache/src/$1",
-      "^@app/message-queue(|/.*)$": "<rootDir>/libs/message-queue/src/$1"
+      "^@app/message-queue(|/.*)$": "<rootDir>/libs/message-queue/src/$1",
+      "^@app/object-storage(|/.*)$": "<rootDir>/libs/object-storage/src/$1"
     }
   },
   "packageManager": "yarn@4.9.2+sha512.1fc009bc09d13cfd0e19efa44cbfc2b9cf6ca61482725eb35bbc5e257e093ebf4130db6dfe15d604ff4b79efd8e1e8e99b25fa7d0a6197c9f9826358d4d65c3c"
