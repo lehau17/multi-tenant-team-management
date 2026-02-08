@@ -70,6 +70,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/notification/tsconfig.app.json"
       }
+    },
+    "object-storage": {
+      "type": "library",
+      "root": "libs/object-storage",
+      "entryFile": "index",
+      "sourceRoot": "libs/object-storage/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/object-storage/tsconfig.lib.json"
+      }
     }
   }
 }
