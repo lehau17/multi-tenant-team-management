@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AuthApi } from "./auth.api";
 import { TLoginRequest, TRegisterRequest } from "./auth.types";
+import { useAuth } from "./auth.context";
 
 export const useLogin = () => {
   const router = useRouter();
+  const { setUser } = useAuth();
   const { getErrorMessage } = useApiError();
 
   return useMutation({
@@ -19,6 +21,7 @@ export const useLogin = () => {
     onSuccess: (data) => {
       Cookies.set("accessToken", data.tokens.accessToken)
       Cookies.set("refreshToken", data.tokens.refreshToken)
+      setUser(data.user);
       router.push("/");
     },
 
