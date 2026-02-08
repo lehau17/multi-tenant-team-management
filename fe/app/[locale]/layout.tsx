@@ -7,6 +7,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import { AuthProvider } from "@/features/auth/auth.context";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -40,23 +41,25 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <div className="flex min-h-svh">
-            <IconSidebar />
+          {/* <div className="flex min-h-svh"> */}
+            {/* <IconSidebar />
             <SidebarProvider>
-              <AppSidebar />
+              <AppSidebar /> */}
               <main className="flex flex-1 flex-col">
-                <header className="flex h-12 items-center gap-2 border-b px-4">
+                {/* <header className="flex h-12 items-center gap-2 border-b px-4">
                   <SidebarTrigger />
-                </header>
+                </header> */}
                 <div className="flex-1">
                   <QueryProvider>
-                    {children}
+                    <AuthProvider>
+                      {children}
+                    </AuthProvider>
                     <Toaster richColors position="top-right" />
                   </QueryProvider>
                 </div>
               </main>
-            </SidebarProvider>
-          </div>
+            {/* </SidebarProvider> */}
+          {/* </div> */}
         </NextIntlClientProvider>
       </body>
     </html>
