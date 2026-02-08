@@ -18,6 +18,7 @@ export const SidebarKeys = {
 } as const
 
 export const AuthKeys = {
+  selectWorkspace: 'selectWorkspace',
   login: 'login',
   email: 'email',
   emailPlaceholder: 'emailPlaceholder',
