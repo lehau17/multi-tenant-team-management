@@ -2,6 +2,7 @@ import { TypeOrmBaseEntity } from "@app/shared";
 import { Column, Entity, ManyToOne } from "typeorm";
 import { StageProjectOrmEntity } from "./stage-project.orm-entity";
 import { PriorityOrmEntity } from "./priority.orm-entity";
+import { ProjectOrmEntity } from "./project.orm-entity";
 
 @Entity('tasks')
 export class TaskOrmEntity extends TypeOrmBaseEntity {
@@ -14,6 +15,9 @@ export class TaskOrmEntity extends TypeOrmBaseEntity {
 
     @ManyToOne(() => StageProjectOrmEntity, (stageProject) => stageProject.tasks)
     stage: StageProjectOrmEntity
+
+    @ManyToOne(() => ProjectOrmEntity, (project) => project.tasks)
+    project: ProjectOrmEntity
 
     @Column({ type: 'int', nullable: true })
     taskNumber: number
