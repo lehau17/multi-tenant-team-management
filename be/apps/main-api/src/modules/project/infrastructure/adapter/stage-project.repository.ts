@@ -15,7 +15,7 @@ export class StageProjectRepository implements IStageProjectRepository {
     private readonly stageRepository: Repository<StageProjectOrmEntity>,
     @InjectRepository(StageProjectTemplateOrmEntity)
     private readonly templateRepository: Repository<StageProjectTemplateOrmEntity>,
-  ) {}
+  ) { }
 
   async createMultipleStages(stages: StageProject[]): Promise<void> {
     const ormEntities = stages.map((s) => StageProjectInfraMapper.toOrmEntity(s));
@@ -40,6 +40,16 @@ export class StageProjectRepository implements IStageProjectRepository {
       where: { project: { id: projectId } },
       relations: ['project'],
       order: { position: 'ASC' },
+    });
+    return orms.map((orm) => StageProjectInfraMapper.toDomain(orm));
+  }
+
+  async getStagesByWorkspace(workspaceId: string): Promise<StageProject[]> {
+    const orms = await this.stageRepository.find({
+      where: { project: { workspaceId } },
+      relations: ['project'],
+      order: { position: 'ASC' },
+      cache: true,
     });
 
     return orms.map((orm) => StageProjectInfraMapper.toDomain(orm));

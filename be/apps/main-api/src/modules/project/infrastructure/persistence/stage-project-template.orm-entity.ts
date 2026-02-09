@@ -15,5 +15,4 @@ export class StageProjectTemplateOrmEntity extends TypeOrmBaseEntity {
 
     @Column({ type: "varchar", nullable: true })
     color: string
-
 }

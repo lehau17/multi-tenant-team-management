@@ -7,4 +7,5 @@ export interface IStageProjectRepository {
   createMultipleStages(stages: StageProject[]): Promise<void>;
   findTemplateStages(): Promise<StageTemplateData[]>;
   findByProjectId(projectId: string): Promise<StageProject[]>;
+  getStagesByWorkspace(workspaceId: string): Promise<StageProject[]>;
 }
