@@ -1,6 +1,7 @@
 import { TypeOrmBaseEntity } from '@app/shared';
 import { Column, Entity, Index, OneToMany } from 'typeorm';
 import { StageProjectOrmEntity } from './stage-project.orm-entity';
+import { TaskOrmEntity } from './task.orm-entity';
 
 @Entity('projects')
 export class ProjectOrmEntity extends TypeOrmBaseEntity {
@@ -18,4 +19,7 @@ export class ProjectOrmEntity extends TypeOrmBaseEntity {
 
   @OneToMany(() => StageProjectOrmEntity, (stageProject) => stageProject.project)
   stageProjects: StageProjectOrmEntity[]
+
+  @OneToMany(() => TaskOrmEntity, (task) => task.project)
+  tasks: TaskOrmEntity[]
 }

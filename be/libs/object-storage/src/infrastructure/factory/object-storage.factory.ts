@@ -17,8 +17,6 @@ export class ObjectStorageFactory {
         switch (options.strategy) {
             case 's3':
                 return new UploadPortAdapter(this.s3Client, this.configService);
-            // We could also pass options directly to adapter if we wanted to avoid strict dependency on global ConfigService inside the adapter,
-            // but sticking to the current pattern where Adapter uses ConfigService.
             case 'local':
                 throw new Error('Local storage strategy not implemented yet');
             default:

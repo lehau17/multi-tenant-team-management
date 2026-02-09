@@ -13,7 +13,7 @@ export class ProjectRepository implements IProjectRepository {
   constructor(
     @InjectRepository(ProjectOrmEntity)
     private readonly projectRepository: Repository<ProjectOrmEntity>,
-  ) {}
+  ) { }
 
   async createProject(project: Project): Promise<void> {
     const ormEntity = this.projectRepository.create({
@@ -54,5 +54,17 @@ export class ProjectRepository implements IProjectRepository {
       data: dataResponse,
       total,
     };
+  }
+
+  async validateProjectStagePriority(projectId: string, stageId: string, priorityId: string): Promise<boolean> {
+    const query = this.projectRepository.createQueryBuilder("project")
+      .innerJoin("project.stageProjects", "stage")
+      .innerJoin("priority_schemes", "scheme", "scheme.workspace_id = project.workspace_id")
+      .innerJoin("priorities", "priority", "priority.scheme_id = scheme.id")
+      .where("project.id = :projectId", { projectId })
+      .andWhere("stage.id = :stageId", { stageId })
+      .andWhere("priority.id = :priorityId", { priorityId });
+
+    return await query.getExists();
   }
 }

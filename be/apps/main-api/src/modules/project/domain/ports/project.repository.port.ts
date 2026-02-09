@@ -8,4 +8,5 @@ export interface IProjectRepository {
   createProject(project: Project): Promise<void>;
   existProjectIdentifier(workspaceId: string, identifier: string): Promise<boolean>;
   getProjectsByWorkspace(query: GetProjectsByWorkspace): Promise<BasePaginationQueryResponse<Project[]>>;
+  validateProjectStagePriority(projectId: string, stageId: string, priorityId: string): Promise<boolean>;
 }

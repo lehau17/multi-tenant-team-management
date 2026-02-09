@@ -1,8 +1,7 @@
 import { Module, Global } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { UploadPortToken } from './domain/port/upload.port';
 import { ObjectStorageFactory } from './infrastructure/factory/object-storage.factory';
-
 import { S3ClientProvider } from './infrastructure/provider/s3.provider';
 
 @Global()
@@ -13,12 +12,12 @@ import { S3ClientProvider } from './infrastructure/provider/s3.provider';
     S3ClientProvider,
     {
       provide: UploadPortToken,
-      useFactory: (factory: ObjectStorageFactory, config: ConfigService) => {
+      useFactory: (factory: ObjectStorageFactory) => {
         return factory.create({
-          strategy: 's3', // Hardcoded for now, or read from config
+          strategy: 's3'
         });
       },
-      inject: [ObjectStorageFactory, ConfigService],
+      inject: [ObjectStorageFactory],
     },
   ],
   exports: [UploadPortToken],
